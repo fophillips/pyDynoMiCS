@@ -1,0 +1,8 @@
+<idynomics>
+ <simulation iterate="100" time="100.0" unit="hour">
+   <grid resolution="2.0" nI="10" nJ="10" nK="1"/>
+   <species name="MyBact" header="population,mass,growthRate" >
+     2.0,2000.0,0.2
+   </species>
+</simulation>
+</idynomics>
