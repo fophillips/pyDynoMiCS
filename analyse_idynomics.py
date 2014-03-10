@@ -18,6 +18,8 @@ def lazy_property(fn):
     return _lazy_property
 
 class AnalyseiDynomics:
+    biomass_name = "totalBiomass"
+    
     def __init__(self, directory):
         self.directory = directory
 
@@ -47,6 +49,17 @@ class AnalyseiDynomics:
         sum_file = self.agent_sum_files.open(self.agent_sum_files.namelist()[0])
         return [species.get('name')
                 for species in ET.parse(sum_file).getroot().find('simulation').findall('species')]
+
+    @lazy_property
+    def all_env_names(self):
+        state_file = self.solute_state_files.open(self.solute_state_files.namelist()[0])
+        return [solute.get('name')
+                for solute in ET.parse(state_file).getroot().find('simulation').findall('solute')]
+        
+    @lazy_property
+    def reaction_rate_names(self):        
+        return [r for r in self.all_env_names if r not in
+                (self.species_names + self.solute_names + [self.biomass_name])]
 
     @lazy_property
     def total_timesteps(self):
