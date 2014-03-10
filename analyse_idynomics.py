@@ -1,7 +1,6 @@
 import numpy as np
 import xml.etree.ElementTree as ET
 from os.path import join
-import re
 from zipfile import ZipFile
 
 def lazy_property(fn):
@@ -70,17 +69,17 @@ class AnalyseiDynomics:
         f = self.agent_sum_files.open(self.agent_sum_files.namelist()[0])
         grid = ET.parse(f).getroot().find('simulation/grid')
         r = float(grid.get('resolution'))
-        i = float(grid.get('nI')) * r
-        j = float(grid.get('nJ')) * r
-        k = float(grid.get('nK')) * r
-        return (i,j,k)
+        i = int(grid.get('nI'))
+        j = int(grid.get('nJ'))
+        k = int(grid.get('nK'))
+        return (k,j,i,r)
 
     @lazy_property
     def solute_sum_data(self):
         names = self.solute_names
         files = [self.solute_sum_files.open(f) for f in  self.solute_sum_files.namelist()[::-1]]
-        sum_data = np.empty(self.total_timesteps,
-                            dtype={'names': names, 'formats': len(names) * ['f4']})
+        sum_data = np.zeros(self.total_timesteps,
+                            dtype={'names': names, 'formats': len(names) * ['3f4']})
         for i, f in enumerate(files):
             root = ET.parse(f).getroot()
             for name in names:
@@ -91,14 +90,15 @@ class AnalyseiDynomics:
 
     
     def load_solute_state_data(self, solute_name):
-        return self.load_state_data(self, solute_name, 'solute', self.solute_state_files)
+        files = [self.solute_state_files.open(f) for f in self.solute_state_files.namelist()[::-1]]
+        return self.load_state_data(solute_name, 'solute', files)
 
     def load_agent_state_data(self, species_name):
-        return self.load_state_data(self, species_name, 'species', self.agent_state_files)
+        files = [self.agent_state_files.open(f) for f in self.agent_state_files.namelist()[::-1]]
+        return self.load_state_data(species_name, 'species', files)
 
-    def load_state_data(name, group, files):
-        xml = ET.parse(files[0]).getroot().find('simulation/%s[@name="%s"]' % (group, name))
-        dimensions = (int(xml.get('nK')), int(xml.get('nJ')), int(xml.get('nI')))
+    def load_state_data(self, name, group, files):
+        dimensions = self.world_dimensions[0:3]
         data = np.zeros(self.total_timesteps, dtype=('(%d,%d,%d)float32' % dimensions))
         for i, f in enumerate(files):
             text = ET.parse(f).getroot().find('simulation/%s[@name="%s"]' % (group, name)).text
