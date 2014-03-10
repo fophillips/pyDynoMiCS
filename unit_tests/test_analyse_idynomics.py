@@ -8,7 +8,7 @@ class TestAnalyseiDynomics:
     expected_reaction_rates = ['MyGrowth-rate']
     expected_biomass_name = "totalBiomass"
     expected_timesteps = 2
-    expected_dimensions = (20.0, 20.0, 2.0)
+    expected_dimensions = (1, 10, 10, 2.0)
     
     def setUp(self):
         self.directory = join(dirname(realpath(__file__)), 'test_data')
@@ -42,4 +42,4 @@ class TestAnalyseiDynomics:
         actual_dimensions = self.analysis.world_dimensions
         assert_equal(self.expected_dimensions, actual_dimensions)
 
-        
+    
