@@ -6,6 +6,7 @@ class TestAnalyseiDynomics:
     expected_solutes = ['MyAtmos', 'pressure']
     expected_species = ['MyBact']
     expected_reaction_rates = ['MyGrowth-rate']
+    expected_biomass_name = "totalBiomass"
     expected_timesteps = 2
     expected_dimensions = (20.0, 20.0, 2.0)
     
@@ -27,6 +28,11 @@ class TestAnalyseiDynomics:
     def test_reaction_rate_names(self):
         actual_reaction_rates = self.analysis.reaction_rate_names
         assert_list_equal(self.expected_reaction_rates, actual_reaction_rates)
+
+    def test_all_env_names(self):
+        expected_names = self.expected_solutes + self.expected_reaction_rates + self.expected_species + [self.expected_biomass_name]
+        actual_names = self.analysis.all_env_names
+        assert_list_equal(expected_names, actual_names)
 
     def test_total_timesteps(self):
         actual_timesteps = self.analysis.total_timesteps
