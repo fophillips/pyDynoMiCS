@@ -1,6 +1,6 @@
 import numpy as np
 import xml.etree.ElementTree as ET
-import os, os.path
+from os.path import join
 import re
 from zipfile import ZipFile
 
@@ -23,19 +23,19 @@ class AnalyseiDynomics:
 
     @lazy_property
     def solute_sum_files(self):
-        return ZipFile('env_Sum.zip')
+        return ZipFile(join(self.directory, 'env_Sum.zip'))
 
     @lazy_property
     def solute_state_files(self):
-        return ZipFile('env_State.zip')
+        return ZipFile(join(self.directory, 'env_State.zip'))
 
     @lazy_property
     def agent_sum_files(self):
-        return ZipFile('agent_Sum.zip')
+        return ZipFile(join(self.directory, 'agent_Sum.zip'))
 
     @lazy_property
     def agent_state_files(self):
-        return ZipFile('agent_State.zip')
+        return ZipFile(join(self.directory, 'agent_State.zip'))
 
     @lazy_property
     def solute_names(self):
