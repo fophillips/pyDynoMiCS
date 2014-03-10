@@ -54,7 +54,7 @@ class AnalyseiDynomics:
 
     @lazy_property
     def world_dimensions(self):
-        f = self.agent_sum_files.namelist()[0]
+        f = self.agent_sum_files.open(self.agent_sum_files.namelist()[0])
         grid = ET.parse(f).getroot().find('simulation/grid')
         r = float(grid.get('resolution'))
         i = float(grid.get('nI')) * r
