@@ -2,6 +2,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 from os.path import join
 from zipfile import ZipFile
+from io import StringIO
 
 def lazy_property(fn):
     '''
@@ -90,19 +91,25 @@ class AnalyseiDynomics:
 
     
     def load_solute_state_data(self, solute_name):
-        files = [self.solute_state_files.open(f) for f in self.solute_state_files.namelist()[::-1]]
-        return self.load_state_data(solute_name, 'solute', files)
-
-    def load_agent_state_data(self, species_name):
-        files = [self.agent_state_files.open(f) for f in self.agent_state_files.namelist()[::-1]]
-        return self.load_state_data(species_name, 'species', files)
-
-    def load_state_data(self, name, group, files):
+        files = [self.solute_state_files.open(f) for f in
+                 self.solute_state_files.namelist()[::-1]]
         dimensions = self.world_dimensions[0:3]
         data = np.zeros(self.total_timesteps, dtype=('(%d,%d,%d)float32' % dimensions))
         for i, f in enumerate(files):
-            text = ET.parse(f).getroot().find('simulation/%s[@name="%s"]' % (group, name)).text
+            text = ET.parse(f).getroot().find('simulation/solute[@name="%s"]' % solute_name).text
             data[i] = np.fromstring(text, sep=";\n").reshape(dimensions)
         return data
 
-    
+    def load_agent_state_data(self, species_name):
+        files = [self.agent_state_files.open(f) for f in
+                 self.agent_state_files.namelist()[::-1]]
+        structure = {'names':
+                     ['family','genealogy','generation','birthday',
+                      'biomass','inert','capsule','growthRate','volumeRate',
+                      'locationX','locationY','locationZ','radius','totalRadius'],
+                     'formats': (['i4'] * 3 + ['f4'] * 11)}
+        data = []
+        for f in files:
+            text = ET.parse(f).getroot().find('simulation/species[@name="%s"]' % species_name).text
+            data.append(np.loadtxt(StringIO(text.replace(';','')), delimiter=',', dtype=structure))
+        return data
