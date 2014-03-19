@@ -22,6 +22,8 @@ class AnalyseiDynomics:
     
     def __init__(self, directory):
         self.directory = directory
+        self._solute_state_data = {}
+        self._agent_state_data = {}
 
     @lazy_property
     def solute_sum_files(self):
@@ -89,8 +91,18 @@ class AnalyseiDynomics:
                 sum_data[name][i,2] = float(root.find('simulation/bulk/uptake_rate[@name="%s"]' % name).text)
         return sum_data
 
+    def solute_state(self, name):
+        if name not in self._solute_state_data:
+            self._solute_state_data[name] = self._load_solute_state_data(name)
+        return self._solute_state_data[name]
+
+    def agent_state(self, name):
+        if name not in self._agent_state_data:
+            self._agent_state_data[name] = self._load_agent_state_data(name)
+        return self._agent_state_data[name]
+            
     
-    def load_solute_state_data(self, solute_name):
+    def _load_solute_state_data(self, solute_name):
         files = [self.solute_state_files.open(f) for f in
                  self.solute_state_files.namelist()[::-1]]
         dimensions = self.world_dimensions[0:3]
@@ -100,7 +112,7 @@ class AnalyseiDynomics:
             data[i] = np.fromstring(text, sep=";\n").reshape(dimensions)
         return data
 
-    def load_agent_state_data(self, species_name):
+    def _load_agent_state_data(self, species_name):
         files = [self.agent_state_files.open(f) for f in
                  self.agent_state_files.namelist()[::-1]]
         structure = {'names':
