@@ -78,17 +78,32 @@ class AnalyseiDynomics:
         return (k,j,i,r)
 
     @lazy_property
-    def solute_sum_data(self):
+    def solute_sum(self):
         names = self.solute_names
-        files = [self.solute_sum_files.open(f) for f in  self.solute_sum_files.namelist()[::-1]]
+        files = self.solute_sum_files.namelist()[::-1]
         sum_data = np.zeros(self.total_timesteps,
                             dtype={'names': names, 'formats': len(names) * ['3f4']})
-        for i, f in enumerate(files):
-            root = ET.parse(f).getroot()
-            for name in names:
-                sum_data[name][i,0] = float(root.find('simulation/bulk/solute[@name="%s"]' % name).text)
-                sum_data[name][i,1] = float(root.find('simulation/globalProductionRate/solute[@name="%s"]' % name).text)
-                sum_data[name][i,2] = float(root.find('simulation/bulk/uptake_rate[@name="%s"]' % name).text)
+        for i, fzip in enumerate(files):
+            with self.solute_sum_files.open(fzip) as f:
+                root = ET.parse(f).getroot()
+                for name in names:
+                    sum_data[name][i,0] = float(root.find('simulation/bulk/solute[@name="%s"]' % name).text)
+                    sum_data[name][i,1] = float(root.find('simulation/globalProductionRate/solute[@name="%s"]' % name).text)
+                    sum_data[name][i,2] = float(root.find('simulation/bulk/uptake_rate[@name="%s"]' % name).text)
+        return sum_data
+
+    @lazy_property
+    def agent_sum(self):
+        names = self.species_names
+        files = self.agent_sum_files.namelist()[::-1]
+        sum_data = np.zeros(self.total_timesteps,
+                            dtype={'names': names, 'formats': len(names) * ['3f4']})
+        for i, fzip in enumerate(files):
+            with self.agent_sum_files.open(fzip) as f:
+                root = ET.parse(f).getroot()
+                for name in names:
+                    sum_data[name][i] = np.fromstring(root.find('simulation/species[@name="%s"]' % name).text,
+                                                      sep=',')
         return sum_data
 
     def solute_state(self, name):
@@ -103,25 +118,25 @@ class AnalyseiDynomics:
             
     
     def _load_solute_state_data(self, solute_name):
-        files = [self.solute_state_files.open(f) for f in
-                 self.solute_state_files.namelist()[::-1]]
+        files = self.solute_state_files.namelist()[::-1]
         dimensions = self.world_dimensions[0:3]
         data = np.zeros(self.total_timesteps, dtype=('(%d,%d,%d)float32' % dimensions))
-        for i, f in enumerate(files):
-            text = ET.parse(f).getroot().find('simulation/solute[@name="%s"]' % solute_name).text
-            data[i] = np.fromstring(text, sep=";\n").reshape(dimensions)
+        for i, fzip in enumerate(files):
+            with self.solute_state_files.open(fzip) as f:
+                text = ET.parse(f).getroot().find('simulation/solute[@name="%s"]' % solute_name).text
+                data[i] = np.fromstring(text, sep=";\n").reshape(dimensions)
         return data
 
     def _load_agent_state_data(self, species_name):
-        files = [self.agent_state_files.open(f) for f in
-                 self.agent_state_files.namelist()[::-1]]
+        files = self.agent_state_files.namelist()[::-1]
         structure = {'names':
                      ['family','genealogy','generation','birthday',
                       'biomass','inert','capsule','growthRate','volumeRate',
                       'locationX','locationY','locationZ','radius','totalRadius'],
                      'formats': (['i4'] * 3 + ['f4'] * 11)}
         data = []
-        for f in files:
-            text = ET.parse(f).getroot().find('simulation/species[@name="%s"]' % species_name).text
-            data.append(np.loadtxt(StringIO(text.replace(';','')), delimiter=',', dtype=structure))
+        for fzip in files:
+            with self.agent_state_files.open(fzip) as f:
+                text = ET.parse(f).getroot().find('simulation/species[@name="%s"]' % species_name).text
+                data.append(np.loadtxt(StringIO(text.replace(';','')), delimiter=',', dtype=structure))
         return data
