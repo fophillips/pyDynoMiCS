@@ -1,8 +1,8 @@
 from nose.tools import *
-from analyse_idynomics import *
+from pydynomics import *
 from os.path import join, dirname, realpath
 
-class TestAnalyseiDynomics:
+class TestPyDynomics:
     expected_solutes = ['MyAtmos', 'pressure']
     expected_species = ['MyBact']
     expected_reaction_rates = ['MyGrowth-rate']
@@ -12,7 +12,7 @@ class TestAnalyseiDynomics:
     
     def setUp(self):
         self.directory = join(dirname(realpath(__file__)), 'test_data')
-        self.analysis = AnalyseiDynomics(self.directory)
+        self.analysis = pyDynomics(self.directory)
 
     def test_init(self):
         assert_is(self.directory, self.analysis.directory)
