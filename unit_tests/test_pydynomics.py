@@ -12,7 +12,7 @@ class TestPyDynomics:
     
     def setUp(self):
         self.directory = join(dirname(realpath(__file__)), 'test_data')
-        self.analysis = pyDynomics(self.directory)
+        self.analysis = pyDynoMiCS(self.directory)
 
     def test_init(self):
         assert_is(self.directory, self.analysis.directory)

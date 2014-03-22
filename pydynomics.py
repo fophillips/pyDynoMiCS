@@ -17,7 +17,7 @@ def lazy_property(fn):
         return getattr(self, attr_name)
     return _lazy_property
 
-class pyDynomics:
+class pyDynoMiCS:
     biomass_name = "totalBiomass"
     
     def __init__(self, directory):
